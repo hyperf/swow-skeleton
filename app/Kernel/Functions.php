@@ -9,8 +9,6 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
-use Hyperf\AsyncQueue\Driver\DriverFactory;
-use Hyperf\AsyncQueue\JobInterface;
 use Hyperf\ExceptionHandler\Formatter\FormatterInterface;
 use Hyperf\Utils\ApplicationContext;
 
@@ -38,16 +36,5 @@ if (! function_exists('format_throwable')) {
     function format_throwable(Throwable $throwable): string
     {
         return di()->get(FormatterInterface::class)->format($throwable);
-    }
-}
-
-if (! function_exists('queue_push')) {
-    /**
-     * Push a job to async queue.
-     */
-    function queue_push(JobInterface $job, int $delay = 0, string $key = 'default'): bool
-    {
-        $driver = di()->get(DriverFactory::class)->get($key);
-        return $driver->push($job, $delay);
     }
 }

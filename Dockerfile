@@ -5,7 +5,7 @@
 # @contact  group@hyperf.io
 # @license  https://github.com/hyperf-cloud/hyperf/blob/master/LICENSE
 
-FROM hyperf/hyperf:7.4-alpine-v3.11-cli
+FROM hyperf/hyperf:7.4-alpine-v3.11-swow
 LABEL maintainer="Hyperf Developers <group@hyperf.io>" version="1.0" license="MIT" app.name="Hyperf"
 
 ##
@@ -23,7 +23,7 @@ RUN set -ex \
     # show php version and extensions
     && php -v \
     && php -m \
-    && php --ri swoole \
+    && php --ri swow \
     #  ---------- some config ----------
     && cd /etc/php7 \
     # - config PHP
