@@ -77,7 +77,7 @@
         ],
         "analyse": "phpstan analyse --memory-limit 512M -l 0 -c phpstan.neon ./app ./config",
         "cs-fix": "php-cs-fixer fix $1",
-        "start": "php ./bin/hyperf.php start",
+        "start": "php bin/hyperf.php start",
         "test": "phpunit -c phpunit.xml --colors=always"
     },
     "repositories": {
