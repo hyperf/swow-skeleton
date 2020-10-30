@@ -3,7 +3,7 @@ name: PHPUnit for Hyperf
 on: [push, pull_request]
 
 env:
-  SW_VERSION: '4.5.6'
+  SW_VERSION: 'develop'
 
 jobs:
   ci:
@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        php-version: ['7.2', '7.3', '7.4']
+        php-version: ['7.3', '7.4']
       max-parallel: 3
     steps:
       - name: Checkout
@@ -22,18 +22,18 @@ jobs:
         with:
           php-version: ${{ matrix.php-version }}
           tools: phpize
-          ini-values: extension=swoole, opcache.enable_cli=1
+          ini-values: extension=swow, opcache.enable_cli=1
           coverage: none
       - name: Setup Swoole
         run: |
-          wget https://github.com/swoole/swoole-src/archive/v${SW_VERSION}.tar.gz -O swoole.tar.gz
-          mkdir -p swoole
-          tar -xf swoole.tar.gz -C swoole --strip-components=1
-          rm swoole.tar.gz
-          cd swoole
+          wget https://github.com/swow/swow/archive/"${SW_VERSION}".tar.gz -O swow.tar.gz
+          mkdir -p swow
+          tar -xf swow.tar.gz -C swow --strip-components=1
+          rm swow.tar.gz
+          cd swow/ext || exit
           phpize
-          ./configure --enable-openssl --enable-mysqlnd --enable-http2
-          make -j$(nproc)
+          ./configure --enable-debug
+          make -j "$(nproc)"
           sudo make install
       - name: Setup Packages
         run: composer update -o
