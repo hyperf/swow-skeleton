@@ -24,7 +24,10 @@ jobs:
           tools: phpize
           ini-values: extension=swow, opcache.enable_cli=1
           coverage: none
-      - name: Setup Swoole
+      - name: Setup Devtool
+        run: |
+          sudo apt-get install -y valgrind
+      - name: Setup Swow
         run: |
           wget https://github.com/swow/swow/archive/"${SW_VERSION}".tar.gz -O swow.tar.gz
           mkdir -p swow
