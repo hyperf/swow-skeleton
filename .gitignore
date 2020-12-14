@@ -9,5 +9,5 @@ vendor/
 .phpintel/
 .env
 .DS_Store
-*.lock
 *.cache
+*.lock
