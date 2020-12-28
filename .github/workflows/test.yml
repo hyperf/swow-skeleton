@@ -26,6 +26,7 @@ jobs:
           coverage: none
       - name: Setup Devtool
         run: |
+          sudo apt-get update
           sudo apt-get install -y valgrind
       - name: Setup Swow
         run: |
