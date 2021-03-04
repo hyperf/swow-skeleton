@@ -7,38 +7,89 @@ env:
 
 jobs:
   ci:
-    name: Test on PHP ${{ matrix.php-version }}
+    name: Test on ${{ matrix.os }} with PHP ${{ matrix.php-version }}
     runs-on: '${{ matrix.os }}'
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest]
+        #os: [macos-latest]
         php-version: ['7.3', '7.4']
-      max-parallel: 3
+        #php-version: ['7.4']
+      max-parallel: 4
+    env:
+      setupphp_exts: igbinary, msgpack, redis
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Setup cache environment
+        id: extcache
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: ${{ env.setupphp_exts }}
+          key: ${{ runner.os }}-setupphpext-v1-
+
+      - name: Cache extensions
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.extcache.outputs.dir }}
+          key: ${{ steps.extcache.outputs.key }}
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php-version }}
-          tools: phpize
+          tools: phpize, php-config
+          extensions: ${{ env.setupphp_exts }}
           ini-values: extension=swow, opcache.enable_cli=1
           coverage: none
-      - name: Setup Devtool
+
+      - name: Setup Valgrind
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
           sudo apt-get install -y valgrind
+
+      - name: Fetch Swow revison
+        run: |
+          data=`curl -s https://api.github.com/repos/swow/swow/git/ref/heads/${SW_VERSION}` || {
+            echo Failed accessing github api
+            exit 1
+          }
+          echo $data | jq '.object.sha' > .swowver
+          cat .swowver
+      
+      - name: Cache Swow
+        uses: actions/cache@v2
+        id: swow-cache
+        with:
+          path: swow
+          key: ${{ runner.os }}-swowext-${{ matrix.php-version }}-${{ hashFiles('.swowver') }}
+
       - name: Setup Swow
         run: |
-          wget https://github.com/swow/swow/archive/"${SW_VERSION}".tar.gz -O swow.tar.gz
-          mkdir -p swow
-          tar -xf swow.tar.gz -C swow --strip-components=1
-          rm swow.tar.gz
-          cd swow/ext || exit
-          phpize
-          ./configure --enable-debug
-          make -j "$(nproc)"
-          sudo make install
+          if [ ! -d swow ]
+          then
+            echo "::group::Fetching swow code"
+            wget https://github.com/swow/swow/archive/"${SW_VERSION}".tar.gz -O swow.tar.gz
+            echo "::endgroup::"
+            echo "::group::Build swow"
+            mkdir -p swow &&
+            tar -xf swow.tar.gz -C swow --strip-components=1 &&
+            rm swow.tar.gz &&
+            cd swow/ext &&
+            phpize &&
+            ./configure --enable-debug &&
+            make -j `${{ runner.os == 'Linux' && 'nproc' || 'sysctl -n hw.logicalcpu' }}`  || exit 1
+            echo "::endgroup::"
+          else
+            cd swow/ext || exit 1
+          fi
+          echo "::group::Install swow"
+          sudo make install || exit 1
+          echo "::endgroup::"
+
       - name: Setup Packages
         run: composer update -o
       - name: Run Test Cases
