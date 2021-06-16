@@ -6,16 +6,15 @@ env:
   SW_VERSION: 'develop'
 
 jobs:
-  ci:
+  unix-tests:
     name: Test on ${{ matrix.os }} with PHP ${{ matrix.php-version }}
     runs-on: '${{ matrix.os }}'
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        #os: [macos-latest]
+        os: [ 'ubuntu-latest', 'macos-latest' ]
         php-version: ['7.3', '7.4']
-        #php-version: ['7.4']
       max-parallel: 4
+      fail-fast: false
     env:
       setupphp_exts: igbinary, msgpack, redis
     steps:
@@ -52,36 +51,45 @@ jobs:
           sudo apt-get install -y valgrind
 
       - name: Fetch Swow revison
+        id: swow-getref
+        shell: php {0}
         run: |
-          data=`curl -s https://api.github.com/repos/swow/swow/git/ref/heads/${SW_VERSION}` || {
-            echo Failed accessing github api
-            exit 1
-          }
-          echo $data | jq '.object.sha' > .swowver
-          cat .swowver
-      
+          <?php
+          $context = stream_context_create([
+            'http'=>[
+              'header'=>
+                "User-Agent: not-curl/0.1\r\n".
+                "Accept: application/vnd.github.v3+json\r\n".
+                "Authorization: Bearer ${{ github.token }}\r\n"
+          ]]);
+          $uri = 'https://api.github.com/repos/swow/swow/git/ref/heads/${{ env.SW_VERSION }}';
+          $ref = json_decode(file_get_contents($uri, false, $context))->object->sha;
+          echo "::set-output name=swowref::" . $ref . PHP_EOL;
+
       - name: Cache Swow
         uses: actions/cache@v2
         id: swow-cache
         with:
           path: swow
-          key: ${{ runner.os }}-swowext-${{ matrix.php-version }}-${{ hashFiles('.swowver') }}
+          key: ${{ runner.os }}-swowext-${{ matrix.php-version }}-${{ steps.swow-getref.outputs.swowref }}
+
+      - name: Checkout Swow
+        if: steps.swow-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          repository: swow/swow
+          ref: ${{ steps.swow-getref.outputs.swowref }}
+          path: swow
 
       - name: Setup Swow
         run: |
-          if [ ! -d swow ]
+          if [ x${{ steps.swow-cache.outputs.cache-hit }} != 'xtrue' ]
           then
-            echo "::group::Fetching swow code"
-            wget https://github.com/swow/swow/archive/"${SW_VERSION}".tar.gz -O swow.tar.gz
-            echo "::endgroup::"
             echo "::group::Build swow"
-            mkdir -p swow &&
-            tar -xf swow.tar.gz -C swow --strip-components=1 &&
-            rm swow.tar.gz &&
-            cd swow/ext &&
-            phpize &&
-            ./configure --enable-debug &&
-            make -j `${{ runner.os == 'Linux' && 'nproc' || 'sysctl -n hw.logicalcpu' }}`  || exit 1
+            cd swow/ext
+            phpize
+            ./configure --enable-swow-debug
+            make -j `${{ runner.os == 'Linux' && 'nproc' || 'sysctl -n hw.logicalcpu' }}`
             echo "::endgroup::"
           else
             cd swow/ext || exit 1
@@ -89,6 +97,114 @@ jobs:
           echo "::group::Install swow"
           sudo make install || exit 1
           echo "::endgroup::"
+
+      - name: Setup Packages
+        run: composer update -o
+      - name: Run Test Cases
+        run: |
+          composer analyse
+          composer test
+  win-tests:
+    name: Test on ${{ matrix.os }} with PHP ${{ matrix.php-version }}
+    runs-on: '${{ matrix.os }}'
+    strategy:
+      matrix:
+        os: [ 'windows-2016' ] # , 'windows-latest' ]
+        php-version: [ '7.3', '7.4' ] # , '8.0' ]
+        exclude:
+          - os: windows-latest
+            php-version: "7.4"
+          - os: windows-latest
+            php-version: "7.3"
+          - os: windows-2016
+            php-version: "8.0"
+          - os: windows-2016
+            php-version: "8.1"
+      max-parallel: 2
+      fail-fast: false
+    env:
+      setupphp_exts: igbinary, msgpack, redis
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup cache environment
+        id: extcache
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: ${{ env.setupphp_exts }}
+          key: ${{ runner.os }}-setupphpext-v1-
+
+      - name: Cache extensions
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.extcache.outputs.dir }}
+          key: ${{ steps.extcache.outputs.key }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          extensions: ${{ env.setupphp_exts }},pdo_mysql
+          coverage: none
+
+      - name: Fetch Swow revison
+        id: swow-getref
+        shell: php {0}
+        run: |
+          <?php
+          $context = stream_context_create([
+            'http'=>[
+              'header'=>
+                "User-Agent: not-curl/0.1\r\n".
+                "Accept: application/vnd.github.v3+json\r\n".
+                "Authorization: Bearer ${{ github.token }}\r\n"
+          ]]);
+          $uri = 'https://api.github.com/repos/swow/swow/git/ref/heads/${{ env.SW_VERSION }}';
+          $ref = json_decode(file_get_contents($uri, false, $context))->object->sha;
+          echo "::set-output name=swowref::" . $ref . PHP_EOL;
+
+      - name: Cache Swow
+        uses: actions/cache@v2
+        id: swow-cache
+        with:
+          path: swow
+          key: ${{ runner.os }}-swowext-${{ matrix.php-version }}-${{ steps.swow-getref.outputs.swowref }}
+
+      - name: Checkout Swow
+        if: steps.swow-cache.outputs.cache-hit != 'true'
+        uses: actions/checkout@v2
+        with:
+          repository: swow/swow
+          ref: ${{ steps.swow-getref.outputs.swowref }}
+          path: swow
+
+      - name: Build Swow
+        if: steps.swow-cache.outputs.cache-hit != 'true'
+        uses: ./swow/.github/workflows/winext
+        with:
+          ext-path: ./swow/ext
+          tools-path: C:\tools\phpdev
+          conf-args: --enable-swow-debug --enable-swow-ssl --enable-swow-curl
+          ext-name: swow
+          deps: openssl,libcurl,libssh2,zlib,nghttp2
+          install: 0
+
+      - name: Install Swow
+        shell: powershell
+        env:
+          BUILD_DIR: 'x64\Release'
+          UNIX_COLOR: '1'
+        run: |
+          Write-Host "::group::Installing Swow"
+          .\swow\.github\workflows\winext\install.ps1 `
+            -ExtPath swow\ext `
+            -ExtName swow `
+            -Enable 1
+          if ($lastexitcode -Ne 0) {
+            exit 1
+          }
 
       - name: Setup Packages
         run: composer update -o
