@@ -1,6 +1,6 @@
 name: PHPUnit for Hyperf
 
-on: [push, pull_request]
+on: [ push, pull_request ]
 
 env:
   SW_VERSION: 'develop'
@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-latest', 'macos-latest' ]
-        php-version: ['7.3', '7.4']
+        php-version: ['7.3', '7.4', '8.0']
       max-parallel: 4
       fail-fast: false
     env:
