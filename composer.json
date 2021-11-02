@@ -47,7 +47,7 @@
         "hyperf/ide-helper": "2.2.*",
         "hyperf/testing": "2.2.*",
         "mockery/mockery": "^1.0",
-        "phpstan/phpstan": "^0.12",
+        "phpstan/phpstan": "^1.0",
         "symfony/var-dumper": "^5.1"
     },
     "autoload": {
