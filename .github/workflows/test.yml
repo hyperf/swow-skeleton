@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-latest', 'macos-latest' ]
-        php-version: ['7.3', '7.4', '8.0']
+        php-version: [ '8.0', '8.1' ]
       max-parallel: 4
       fail-fast: false
     env:
@@ -41,7 +41,7 @@ jobs:
           php-version: ${{ matrix.php-version }}
           tools: phpize, php-config
           extensions: ${{ env.setupphp_exts }}
-          ini-values: extension=swow, opcache.enable_cli=1
+          ini-values: extension=swow, opcache.enable_cli=0
           coverage: none
 
       - name: Setup Valgrind
@@ -109,17 +109,8 @@ jobs:
     runs-on: '${{ matrix.os }}'
     strategy:
       matrix:
-        os: [ 'windows-2016' ] # , 'windows-latest' ]
-        php-version: [ '7.3', '7.4' ] # , '8.0' ]
-        exclude:
-          - os: windows-latest
-            php-version: "7.4"
-          - os: windows-latest
-            php-version: "7.3"
-          - os: windows-2016
-            php-version: "8.0"
-          - os: windows-2016
-            php-version: "8.1"
+        os: [ 'windows-latest' ]
+        php-version: [ '8.0', '8.1' ]
       max-parallel: 2
       fail-fast: false
     env:
