@@ -109,7 +109,7 @@ jobs:
     runs-on: '${{ matrix.os }}'
     strategy:
       matrix:
-        os: [ 'windows-latest' ]
+        os: [ 'windows-2019' ]
         php-version: [ '8.0', '8.1' ]
       max-parallel: 2
       fail-fast: false

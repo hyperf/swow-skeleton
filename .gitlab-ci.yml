@@ -1,18 +1,37 @@
 # usermod -aG docker gitlab-runner
 
 stages:
+  - unit
   - build
   - deploy
 
 variables:
   PROJECT_NAME: hyperf
   REGISTRY_URL: registry-docker.org
+  GIT_SUBMODULE_STRATEGY: recursive
+
+unit:
+  stage: unit
+  image: hyperf/docker-ci:latest
+  resource_group: $CI_PROJECT_NAME
+  variables:
+    DOCKER_TLS_CERTDIR: ""
+    DOCKER_DRIVER: overlay2
+  before_script:
+    - cp .env.example .env
+  script:
+    - APP_ENV=test docker-compose up -d --remove-orphans --build
+    - docker exec $(basename $(pwd))_hyperf_1 composer install
+    - docker exec $(basename $(pwd))_hyperf_1 composer analyse
+    - docker exec $(basename $(pwd))_hyperf_1 vendor/bin/php-cs-fixer fix --dry-run
+    - docker exec $(basename $(pwd))_hyperf_1 composer test
+  after_script:
+    - docker-compose down
+  tags:
+    - unit
 
 build_test_docker:
   stage: build
-  before_script:
-#    - git submodule sync --recursive
-#    - git submodule update --init --recursive
   script:
     - docker build . -t $PROJECT_NAME
     - docker tag $PROJECT_NAME $REGISTRY_URL/$PROJECT_NAME:test
@@ -33,9 +52,6 @@ deploy_test_docker:
 
 build_docker:
   stage: build
-  before_script:
-#    - git submodule sync --recursive
-#    - git submodule update --init --recursive
   script:
     - docker build . -t $PROJECT_NAME
     - docker tag $PROJECT_NAME $REGISTRY_URL/$PROJECT_NAME:$CI_COMMIT_REF_NAME
