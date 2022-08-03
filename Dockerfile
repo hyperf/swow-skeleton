@@ -5,7 +5,7 @@
 # @contact  group@hyperf.io
 # @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
 
-FROM hyperf/hyperf:8.0-alpine-v3.15-swow
+FROM hyperf/hyperf:8.1-alpine-v3.16-swow
 LABEL maintainer="Hyperf Developers <group@hyperf.io>" version="1.0" license="MIT" app.name="Hyperf"
 
 ##
@@ -25,7 +25,7 @@ RUN set -ex \
     && php -m \
     && php --ri swow \
     #  ---------- some config ----------
-    && cd /etc/php8 \
+    && cd /etc/php* \
     # - config PHP
     && { \
         echo "upload_max_filesize=128M"; \
