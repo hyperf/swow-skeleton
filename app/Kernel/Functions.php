@@ -28,11 +28,11 @@ if (! function_exists('di')) {
     }
 }
 
-if (! function_exists('format_throwable')) {
+if (! function_exists('formatThrowable')) {
     /**
      * Format a throwable to string.
      */
-    function format_throwable(Throwable $throwable): string
+    function formatThrowable(Throwable $throwable): string
     {
         return di()->get(FormatterInterface::class)->format($throwable);
     }
