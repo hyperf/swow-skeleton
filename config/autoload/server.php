@@ -25,4 +25,7 @@ return [
             ],
         ],
     ],
+    'settings' => [
+        'pid_file' => BASE_PATH . '/runtime/hyperf.pid',
+    ]
 ];
