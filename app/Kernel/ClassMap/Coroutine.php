@@ -12,9 +12,11 @@ declare(strict_types=1);
 namespace Hyperf\Utils;
 
 use App\Kernel\Context\Coroutine as Go;
+use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\Engine\Coroutine as Co;
 use Hyperf\Engine\Exception\CoroutineDestroyedException;
 use Hyperf\Engine\Exception\RunningInNonCoroutineException;
+use Throwable;
 
 class Coroutine
 {
@@ -27,12 +29,18 @@ class Coroutine
         return Co::id();
     }
 
-    public static function defer(callable $callable)
+    public static function defer(callable $callable): void
     {
-        Co::defer($callable);
+        Co::defer(static function () use ($callable) {
+            try {
+                $callable();
+            } catch (Throwable $exception) {
+                di()->get(StdoutLoggerInterface::class)->error((string) $exception);
+            }
+        });
     }
 
-    public static function sleep(float $seconds)
+    public static function sleep(float $seconds): void
     {
         usleep(intval($seconds * 1000 * 1000));
     }
