@@ -13,33 +13,23 @@
     "license": "MIT",
     "require": {
         "php": ">=8.0",
-        "ext-json": "*",
-        "ext-openssl": "*",
-        "ext-pdo": "*",
-        "ext-pdo_mysql": "*",
-        "ext-redis": "*",
         "hyperf/cache": "3.0.*",
         "hyperf/command": "3.0.*",
         "hyperf/config": "3.0.*",
         "hyperf/constants": "3.0.*",
         "hyperf/contract": "3.0.*",
-        "hyperf/database": "3.0.*",
         "hyperf/db-connection": "3.0.*",
         "hyperf/di": "3.0.*",
         "hyperf/dispatcher": "3.0.*",
-        "hyperf/engine-swow": "^2.0",
+        "hyperf/engine-swow": "^2.1",
         "hyperf/event": "3.0.*",
         "hyperf/exception-handler": "3.0.*",
         "hyperf/framework": "3.0.*",
         "hyperf/guzzle": "3.0.*",
         "hyperf/http-server": "3.0.*",
         "hyperf/logger": "3.0.*",
-        "hyperf/model-cache": "3.0.*",
-        "hyperf/pool": "3.0.*",
         "hyperf/process": "3.0.*",
         "hyperf/phar": "3.0.*",
-        "hyperf/redis": "3.0.*",
-        "hyperf/server": "3.0.*",
         "hyperf/utils": "3.0.*"
     },
     "require-dev": {
@@ -49,13 +39,17 @@
         "mockery/mockery": "^1.0",
         "phpstan/phpstan": "^1.0"
     },
+    "suggest": {
+        "ext-openssl": "Required to use HTTPS.",
+        "ext-json": "Required to use JSON.",
+        "ext-pdo": "Required to use MySQL Client.",
+        "ext-pdo_mysql": "Required to use MySQL Client.",
+        "ext-redis": "Required to use Redis Client."
+    },
     "autoload": {
         "psr-4": {
             "App\\": "app/"
         },
-        "files": [
-            "app/Kernel/Functions.php"
-        ]
     },
     "autoload-dev": {
         "psr-4": {

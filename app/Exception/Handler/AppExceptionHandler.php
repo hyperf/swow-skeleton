@@ -11,28 +11,23 @@ declare(strict_types=1);
  */
 namespace App\Exception\Handler;
 
-use App\Exception\BusinessException;
 use Hyperf\Contract\StdoutLoggerInterface;
 use Hyperf\ExceptionHandler\ExceptionHandler;
-use Hyperf\ExceptionHandler\Formatter\FormatterInterface;
+use Hyperf\HttpMessage\Stream\SwooleStream;
 use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
-class RPCExceptionHandler extends ExceptionHandler
+class AppExceptionHandler extends ExceptionHandler
 {
-    public function __construct(protected StdoutLoggerInterface $logger, protected FormatterInterface $formatter)
+    public function __construct(protected StdoutLoggerInterface $logger)
     {
     }
 
     public function handle(Throwable $throwable, ResponseInterface $response)
     {
-        if ($throwable instanceof BusinessException) {
-            $this->logger->warning($this->formatter->format($throwable));
-        } else {
-            $this->logger->error($this->formatter->format($throwable));
-        }
-
-        return $response;
+        $this->logger->error(sprintf('%s[%s] in %s', $throwable->getMessage(), $throwable->getLine(), $throwable->getFile()));
+        $this->logger->error($throwable->getTraceAsString());
+        return $response->withHeader('Server', 'Hyperf')->withStatus(500)->withBody(new SwooleStream('Internal Server Error.'));
     }
 
     public function isValid(Throwable $throwable): bool

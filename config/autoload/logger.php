@@ -28,10 +28,5 @@ return [
                 'allowInlineLineBreaks' => true,
             ],
         ],
-        'processors' => [
-            [
-                'class' => Log\AppendRequestIdProcessor::class,
-            ],
-        ],
     ],
 ];

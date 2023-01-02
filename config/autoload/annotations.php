@@ -17,9 +17,6 @@ return [
         'ignore_annotations' => [
             'mixin',
         ],
-        'class_map' => [
-            Hyperf\Utils\Coroutine::class => BASE_PATH . '/app/Kernel/ClassMap/Coroutine.php',
-            Hyperf\Di\Resolver\ResolverDispatcher::class => BASE_PATH . '/app/Kernel/ClassMap/ResolverDispatcher.php',
-        ],
+        'class_map' => [],
     ],
 ];
