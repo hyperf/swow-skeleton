@@ -23,6 +23,12 @@ return [
             'callbacks' => [
                 Event::ON_REQUEST => [Hyperf\HttpServer\Server::class, 'onRequest'],
             ],
+            'settings' => [
+                'recv_message_timeout' => 60, // swow > v1.2.0
+            ],
         ],
+    ],
+    'settings' => [
+        'pid_file' => BASE_PATH . '/runtime/hyperf.pid',
     ],
 ];
