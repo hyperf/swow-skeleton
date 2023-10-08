@@ -17,7 +17,7 @@ date_default_timezone_set('Asia/Shanghai');
 
 require BASE_PATH . '/vendor/autoload.php';
 
-Hyperf\Di\ClassLoader::init();
+Hyperf\Di\ClassLoader::init(handler: new Hyperf\Di\ScanHandler\ProcScanHandler());
 
 $container = require BASE_PATH . '/config/container.php';
 
