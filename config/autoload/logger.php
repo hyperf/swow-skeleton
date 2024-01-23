@@ -11,7 +11,7 @@ declare(strict_types=1);
  */
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\StreamHandler;
-use Monolog\Logger;
+use Monolog\Level;
 
 return [
     'default' => [
@@ -19,7 +19,7 @@ return [
             'class' => StreamHandler::class,
             'constructor' => [
                 'stream' => BASE_PATH . '/runtime/logs/hyperf.log',
-                'level' => Logger::INFO,
+                'level' => Level::Info,
             ],
         ],
         'formatter' => [
