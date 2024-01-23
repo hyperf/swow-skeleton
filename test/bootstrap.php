@@ -9,6 +9,10 @@ declare(strict_types=1);
  * @contact  group@hyperf.io
  * @license  https://github.com/hyperf/hyperf/blob/master/LICENSE
  */
+use Hyperf\Contract\ApplicationInterface;
+use Hyperf\Di\ClassLoader;
+use Hyperf\Di\ScanHandler\ProcScanHandler;
+
 error_reporting(E_ALL);
 date_default_timezone_set('Asia/Shanghai');
 
@@ -17,8 +21,8 @@ date_default_timezone_set('Asia/Shanghai');
 
 require BASE_PATH . '/vendor/autoload.php';
 
-Hyperf\Di\ClassLoader::init(handler: new Hyperf\Di\ScanHandler\ProcScanHandler());
+ClassLoader::init(handler: new ProcScanHandler());
 
 $container = require BASE_PATH . '/config/container.php';
 
-$container->get(Hyperf\Contract\ApplicationInterface::class);
+$container->get(ApplicationInterface::class);

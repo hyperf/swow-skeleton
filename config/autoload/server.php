@@ -11,9 +11,10 @@ declare(strict_types=1);
  */
 use Hyperf\Server\Event;
 use Hyperf\Server\Server;
+use Hyperf\Server\SwowServer;
 
 return [
-    'type' => Hyperf\Server\SwowServer::class,
+    'type' => SwowServer::class,
     'servers' => [
         [
             'name' => 'http',
